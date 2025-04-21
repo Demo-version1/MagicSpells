@@ -63,17 +63,36 @@ public class PlayerHandler implements Listener{
             }
 
             if(spell==1 && spell1==1){
-                world.spawnParticle(Particle.SOUL_FIRE_FLAME, location, 20, 0.1,0,0.1);
                 List<Entity> nearestEntities = player.getNearbyEntities(10d,0,10d);
                 for(Entity entity : nearestEntities){
                     if (entity instanceof LivingEntity) {
                         ((LivingEntity) entity).damage(3.5);
                     }
                 }
+                double radius = 1.5;
+
+                for (int i = 0; i < 360; i += 10) {
+                    double angle = Math.toRadians(i);
+                    double x = Math.cos(angle) * radius;
+                    double z = Math.sin(angle) * radius;
+
+                    Location particleLoc = location.clone().add(x, 1.0, z); // высота = 1 блок над землёй
+                    world.spawnParticle(Particle.SOUL_FIRE_FLAME, particleLoc, 0, 0, 0, 0, 0);
+                }
             }
             if (spell==2) {
                 PotionEffect effect = new PotionEffect(PotionEffectType.INSTANT_HEALTH, 2,1);
                 effect.apply(player);
+                double radius = 1.2;
+
+                for (int i = 0; i < 360; i += 10) {
+                    double angle = Math.toRadians(i);
+                    double x = Math.cos(angle) * radius;
+                    double z = Math.sin(angle) * radius;
+
+                    Location particleLoc = location.clone().add(x, 1.0, z); // высота = 1 блок над землёй
+                    world.spawnParticle(Particle.END_ROD, particleLoc, 0, 0, 0, 0, 0);
+                }
             }
             if(spell==2 && spell1==1){
                 Block block = player.getTargetBlock(null,5);
