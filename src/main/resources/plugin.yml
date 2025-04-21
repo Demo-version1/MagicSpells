@@ -1,0 +1,4 @@
+name: MagicSpells
+version: '1.0-SNAPSHOT'
+main: net.demo.magicSpells.MagicSpells
+api-version: '1.21'
