@@ -11,27 +11,28 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerToggleFlightEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
-import org.bukkit.util.Vector;
-import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.UUID;
 
 public class PlayerHandler implements Listener{
 
     JavaPlugin plugin = JavaPlugin.getPlugin(MagicSpells.class);
 
-    public int spell;
-    public int spell1;
     private BukkitTask resetTask;
     private BukkitTask delayTask;
+    public static HashMap<UUID, Integer> spell1_Map = new HashMap<>();
+    public static HashMap<UUID, Integer> spell_Map = new HashMap<>();
+    int current = spell_Map.getOrDefault(spell_Map,0);
+    int current1 = spell1_Map.getOrDefault(spell1_Map,0);
 
     @EventHandler
     public void onJoin(PlayerJoinEvent e){
@@ -41,28 +42,34 @@ public class PlayerHandler implements Listener{
             player.getInventory().addItem(stack);
         }
         player.setAllowFlight(true);
+        List<Player> playerList = new ArrayList<>(Bukkit.getOnlinePlayers());
     }
+
+
 
     @EventHandler
     public void spellCast(PlayerInteractEvent e){
         Player player = e.getPlayer();
         World world = player.getWorld();
         Location location = player.getLocation();
+        UUID uuid = player.getUniqueId();
 
         if(player.getInventory().getItemInMainHand().getType()==Material.BREEZE_ROD){
 
             if(e.getAction().equals(Action.RIGHT_CLICK_AIR)){
-                spell++;
-                player.sendMessage(String.valueOf(spell));
+                current1++;
+                spell_Map.put(uuid, current1);
+                //player.sendMessage(String.valueOf(spell_Map));
                 resetSpells(player);
             }
             if(e.getAction().equals(Action.LEFT_CLICK_AIR)){
-                spell1++;
-                player.sendMessage(String.valueOf(spell1));
+                current++;
+                spell1_Map.put(uuid, current);
+                //player.sendMessage(String.valueOf(spell1_Map));
                 resetSpells(player);
             }
 
-            if(spell==1 && spell1==1){
+            if(current1==1 && current==1){
                 List<Entity> nearestEntities = player.getNearbyEntities(10d,0,10d);
                 for(Entity entity : nearestEntities){
                     if (entity instanceof LivingEntity) {
@@ -80,7 +87,7 @@ public class PlayerHandler implements Listener{
                     world.spawnParticle(Particle.SOUL_FIRE_FLAME, particleLoc, 0, 0, 0, 0, 0);
                 }
             }
-            if (spell==2) {
+            if (current==2) {
                 PotionEffect effect = new PotionEffect(PotionEffectType.INSTANT_HEALTH, 2,1);
                 effect.apply(player);
                 double radius = 1.2;
@@ -94,12 +101,17 @@ public class PlayerHandler implements Listener{
                     world.spawnParticle(Particle.END_ROD, particleLoc, 0, 0, 0, 0, 0);
                 }
             }
-            if(spell==2 && spell1==1){
+            if(current==2 && current1==1){
                 Block block = player.getTargetBlock(null,5);
                 Location blockLocation = block.getLocation();
                 world.spawnEntity(blockLocation, EntityType.LIGHTNING_BOLT);
                 String loc = blockLocation+"";
                 player.sendMessage(loc);
+            }
+            if(current==3){
+                Block block = player.getTargetBlock(null,5);
+                Location blockLoc = block.getLocation();
+                player.teleport(blockLoc);
             }
         }
     }
@@ -109,9 +121,8 @@ public class PlayerHandler implements Listener{
         resetTask = new BukkitRunnable() {
             @Override
             public void run() {
-                spell=0;
-                spell1=0;
-                //player.sendMessage(ChatColor.GOLD + "Spells variables were set to null");
+                current=0;
+                current1=0;
             }
         }.runTaskLater(plugin, 40);
     }
